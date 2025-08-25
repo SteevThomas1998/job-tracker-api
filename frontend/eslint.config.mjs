@@ -8,7 +8,11 @@ export default [
   js.configs.recommended,
   {
     files: ["**/*.{js,jsx}"],
-    ignores: ["node_modules/**", "dist/**", "coverage/**"],
+    ignores: ["node_modules/**", 
+      "dist/**", 
+      "coverage/**", 
+      "vite.config.js", 
+      "src/setupTests.js"],
     languageOptions: {
       ecmaVersion: 2021,
       sourceType: "module",      // ensure ESM
