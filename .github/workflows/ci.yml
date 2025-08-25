@@ -45,43 +45,65 @@ jobs:
   backend:
     name: Backend (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     needs: frontend
+    timeout-minutes: 20
     strategy:
-      fail-fast: false
-      matrix: { node: [18, 20, 22] }
-
+              fail-fast: false
+              matrix:
+                node: [18, 20, 22]
+        
+       # All run steps execute inside ./job-tracker-api
+    defaults:
+     run:
+      working-directory: ./job-tracker-api
+        
+            # If you need Mongo for tests, uncomment services + MONGO_URL
+            # services:
+            #   mongo:
+            #     image: mongo:7
+            #     ports: ["27017:27017"]
+            #     options: >-
+            #       --health-cmd="mongosh --eval 'db.runCommand({ ping: 1 })'"
+            #       --health-interval=10s
+            #       --health-timeout=5s
+            #       --health-retries=5
+        
     env:
-      NODE_ENV: test
-      # MONGO_URL: mongodb://localhost:27017/jobtracker_test
-      # JWT_SECRET: testsecret
-
+           NODE_ENV: test
+              # MONGO_URL: mongodb://localhost:27017/jobtracker_test
+              # JWT_SECRET: testsecret
+        
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
-          cache: npm
-          cache-dependency-path: job-tracker-api/package-lock.json
-      - name: Install deps
-        working-directory: job-tracker-api
-        run: npm ci
-      - name: Lint
-        working-directory: job-tracker-api
-        run: npm run lint
-      # - name: DB prepare
-      #   working-directory: job-tracker-api
-      #   run: npm run db:migrate --if-present
-      - name: Unit tests (Jest)
-        working-directory: job-tracker-api
-        run: npm test -- --runInBand
-      - name: Coverage (Jest)
-        if: always()
-        working-directory: job-tracker-api
-        run: npm run test:ci --if-present || true
-      - name: Upload coverage artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-coverage-${{ matrix.node }}
-          path: job-tracker-api/coverage
+              - name: Checkout repo
+                uses: actions/checkout@v4
+        
+              - name: Use Node ${{ matrix.node }}
+                uses: actions/setup-node@v4
+                with:
+                  node-version: ${{ matrix.node }}
+                  cache: npm
+                  # path is from repo root
+                  cache-dependency-path: job-tracker-api/package-lock.json
+        
+              - name: Install deps
+                run: npm ci
+        
+              - name: Lint
+                run: npm run lint --if-present
+        
+              # - name: DB prepare
+              #   run: npm run db:migrate --if-present
+        
+              - name: Unit tests (Jest)
+                run: npm test -- --runInBand
+        
+              - name: Coverage (Jest)
+                if: always()
+                run: npm run test:ci --if-present
+        
+              - name: Upload coverage artifact
+                if: always()
+                uses: actions/upload-artifact@v4
+                with:
+                  name: backend-coverage-${{ matrix.node }}
+                  path: job-tracker-api/coverage
