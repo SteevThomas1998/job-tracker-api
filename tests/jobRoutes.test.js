@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const app = require("../server");
 const { connectDB, disconnectDB } = require("../config/db"); // export these
 const User = require("../models/User"); // adjust path/name to your model
-const Job = require("../models/Job");   // adjust path/name to your model
+const Job = require("../models/Jobs");   // adjust path/name to your model
 
 describe("Job Routes", () => {
   const unique = Date.now();

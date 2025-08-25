@@ -5,7 +5,7 @@ const jobSchema = new mongoose.Schema({
     company: { type: String, required: true },
     status: { type: String, required: true, enum: ["applied", "interviewing", "offer", "rejected"], default: "applied" },
     location: { type: String, required: true },
-    description: { type: String, required: false },
+    description: { type: String},
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
