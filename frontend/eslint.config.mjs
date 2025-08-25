@@ -1,4 +1,3 @@
-// eslint.config.js
 import js from "@eslint/js";
 import globals from "globals";
 import react from "eslint-plugin-react";
@@ -12,16 +11,9 @@ export default [
     ignores: ["node_modules/**", "dist/**", "coverage/**"],
     languageOptions: {
       ecmaVersion: 2021,
-      sourceType: "module",
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-      },
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
+      sourceType: "module",      // ensure ESM
+      globals: { ...globals.browser, ...globals.node },
+      parserOptions: { ecmaFeatures: { jsx: true } },
     },
     plugins: {
       react,
@@ -29,28 +21,34 @@ export default [
       "jsx-a11y": jsxA11y,
     },
     rules: {
-      // General JS
       "no-unused-vars": "warn",
       "no-console": "off",
-      "semi": ["error", "always"],
-      "quotes": ["error", "double"],
-
-      // React specific
+      semi: ["error", "always"],
+      quotes: ["error", "double"],
       "react/react-in-jsx-scope": "off", // not needed in React 17+
-      "react/prop-types": "off", // can enable if using PropTypes
-      "react/jsx-uses-react": "off", // not needed in React 17+
-
-      // Hooks
+      "react/jsx-uses-react": "off",     // not needed in React 17+
+      "react/prop-types": "off",
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
-
-      // Accessibility
-      "jsx-a11y/alt-text": "warn",
-      "jsx-a11y/anchor-is-valid": "warn"
     },
     settings: {
-      react: {
-        version: "detect",
+      react: { version: "detect" },
+    },
+  },
+  // Extra config for test files
+  {
+    files: ["**/*.{test,spec}.{js,jsx}"],
+    languageOptions: {
+      globals: {
+        describe: "readonly",
+        it: "readonly",
+        test: "readonly",
+        expect: "readonly",
+        beforeAll: "readonly",
+        afterAll: "readonly",
+        beforeEach: "readonly",
+        afterEach: "readonly",
+        vi: "readonly",
       },
     },
   },

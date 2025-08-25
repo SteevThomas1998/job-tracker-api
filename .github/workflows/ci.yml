@@ -66,6 +66,7 @@ jobs:
     env:
       NODE_ENV: test
       MONGO_URL: mongodb://localhost:27017/jobtracker_test
+      JWT_SECRET: testsecret
 
     steps:
       - name: Checkout repo

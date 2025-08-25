@@ -1,6 +1,5 @@
 // tests/jobRoutes.test.js
 const request = require("supertest");
-const mongoose = require("mongoose");
 const app = require("../server");
 const { connectDB, disconnectDB } = require("../config/db"); // export these
 const User = require("../models/User"); // adjust path/name to your model
