@@ -26,8 +26,12 @@ exports.getJobs = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const [items, total] = await Promise.all([
-      Job.find({ createdBy: req.user._id }).sort("-createdAt").skip(skip).limit(limit).lean(),
-      Job.countDocuments({ createdBy: req.user._id })
+      Job.find({ createdBy: req.user._id })
+        .sort("-createdAt")
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Job.countDocuments({ createdBy: req.user._id }),
     ]);
 
     res.status(200).json({ items, page, limit, total });
