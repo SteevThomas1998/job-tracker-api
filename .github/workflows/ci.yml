@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  frontend:
+    name: Frontend (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 20, 22]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+
+      - name: Install deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Unit tests (Vitest)
+        working-directory: frontend
+        run: npm run test -- --run
+
+      - name: Coverage (Vitest)
+        if: always()
+        working-directory: frontend
+        run: npm run test:coverage
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-${{ matrix.node }}
+          path: |
+            frontend/coverage
+            frontend/coverage/**/*
+
+  backend:
+    name: Backend (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: frontend
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 20, 22]
+
+    # If your backend tests need Mongo, uncomment the "services" block below
+    # services:
+    #   mongo:
+    #     image: mongo:7
+    #     ports: ["27017:27017"]
+    #     options: >-
+    #       --health-cmd="mongosh --eval 'db.runCommand({ ping: 1 })'"
+    #       --health-interval=10s
+    #       --health-timeout=5s
+    #       --health-retries=5
+
+    env:
+      NODE_ENV: test
+      # Example, adjust to what your tests expect:
+      # MONGO_URL: mongodb://localhost:27017/jobtracker_test
+      # JWT_SECRET: testsecret
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Use Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: |
+            job-tracker-api/package-lock.json
+
+      - name: Install deps
+        working-directory: job-tracker-api
+        run: npm ci
+
+      - name: Lint
+        working-directory: job-tracker-api
+        run: npm run lint
+
+      # If you have DB migrations or prisma generate, add them here:
+      # - name: DB prepare
+      #   working-directory: job-tracker-api
+      #   run: npm run db:migrate --if-present
+
+      - name: Unit tests (Jest)
+        working-directory: job-tracker-api
+        run: npm test -- --runInBand
+
+      - name: Coverage (Jest)
+        if: always()
+        working-directory: job-tracker-api
+        run: npm run test:ci --if-present || true
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-${{ matrix.node }}
+          path: |
+            job-tracker-api/coverage
+            job-tracker-api/coverage/**/*
